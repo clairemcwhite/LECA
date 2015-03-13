@@ -1,5 +1,6 @@
 from BeautifulSoup import BeautifulSoup as BS
 import re
+import csv
 
 import urllib2
 
@@ -9,18 +10,20 @@ KOGS = s_input.read().strip().split()
 KOGS=list(KOGS) #this is a list of all the KOGS IDS
 
 
+holder = []
 
-dictall = {}
 #KOG = "KOG4383"
 for KOG in KOGS:
+    
     url = 'http://eggnog.embl.de/version_4.0.beta/cgi/search.py?search_term_0={0}&search_species_0=-1'.format(KOG)
     print url
-
+    dictall = {}
     page = urllib2.urlopen(url).read()
-   
 
-   
+
+ 
     newpage =  BS(page)
+    
     description = newpage.findAll("div", {"class":"description"})
     description = re.sub('<[^<]+?>', '', str(description[0]))
     sep3 = []
@@ -32,20 +35,23 @@ for KOG in KOGS:
         if line != '' and line[0]!=' ':
             sep3.append(line)
 
-    #print sep3
-
-    
-
+  
     for line in sep3:
         
-        words = line.split(' ')
-        #print words
-        species = words[1][:-1]
-        #genes = words[0] + str(words[2:]
-        dictall[species]= str(words[2:])
 
-    #print dictall
-    fulldict = {}
-    fulldict[KOG]=dictall
-print fulldict
-    
+        
+        words = line.split(':')
+        
+        species = words[0]
+        genes = words[1]
+        holder.append([KOG, species, genes])
+
+
+
+
+f = open("KOGdictionary.csv", "w")
+w = csv.writer(f)
+for line in holder:
+    w.writerow(line)
+
+f.close()
